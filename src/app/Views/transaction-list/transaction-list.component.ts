@@ -13,13 +13,20 @@ import { Subscription } from 'rxjs';
 })
 export class TransactionListComponent {
   transactions: Transaction[] = [];
+  startDate: string = '2021-12-01';
+  endDate: string = '2021-12-31';
+
   private transactionsSubscription: Subscription | undefined;
 
   constructor(private transactionService: TransactionService) { }
 
   ngOnInit() {
-    this.transactionsSubscription = this.transactionService.getTransactions().subscribe(transactions => {
-      this.transactions = transactions;
+    // this.transactionsSubscription = this.transactionService.getTransactions().subscribe(transactions => {
+    //   this.transactions = transactions;
+    // });
+
+    this.transactionService.getTransactions(this.startDate, this.endDate).subscribe(data => {
+      this.transactions = data.filter(t => ['COMPLETED', 'IN PROGRESS', 'REJECTED'].includes(t.status));
     });
   }
 

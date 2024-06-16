@@ -23,36 +23,57 @@ export class TransactionDetailsComponent {
   ) { }
 
   ngOnInit() {
-    // const id = + this.route.snapshot.paramMap.get('id')!;
-    const idParam = this.route.snapshot.paramMap.get('id');
-    const id = idParam !== null ? +idParam : 0;
-    this.transactionService.getTransactions().subscribe(transactions => {
-      this.transaction = transactions.find(t => t.id === id) || { id: 0, date: '', comments: '' };
-      this.initForm();
-    });
+    // // const id = + this.route.snapshot.paramMap.get('id')!;
+    // const idParam = this.route.snapshot.paramMap.get('id');
+    // const id = idParam !== null ? +idParam : 0;
+    // this.transactionService.getTransactions().subscribe(transactions => {
+    //   this.transaction = transactions.find(t => t.id === id) || { id: 0, date: '', comments: '' };
+    //   this.initForm();
+    // });
 
     // this.transactionForm = this.fb.group({
     //   id: [{ value: this.transaction?.id ?? 0, disabled: true }],
     //   date: [{ value: this.transaction?.date ?? '', disabled: true }],
     //   comments: [this.transaction?.comments ?? '', [Validators.required, Validators.pattern('^[a-zA-Z0-9 ]*$')]]
     // });
+
+    const id = this.route.snapshot.paramMap.get('id');
+    console.log(id)
+    if (id) {
+      this.transaction = this.transactionService.getTransactionById(id);
+      if (this.transaction) {
+        this.initForm();
+      } else {
+        // Handle case where transaction is not found
+        this.router.navigate(['/transaction-list']);
+      }
+    }
   }
 
   private initForm() {
     this.transactionForm = this.fb.group({
       id: [{ value: this.transaction?.id, disabled: true }],
       date: [{ value: this.transaction?.date, disabled: true }],
-      comments: [this.transaction?.comments, [Validators.required, Validators.pattern('^[a-zA-Z0-9 ]*$')]]
+      comments: [this.transaction?.Comments, [Validators.required, Validators.pattern('^[a-zA-Z0-9 ]*$')]]
     });
   }
 
   onSubmit() {
-    if (this.transactionForm?.valid) {
-      if (this.transaction != null){
-        this.transaction.comments = this.transactionForm.get('comments')?.value;
-        console.log(this.transaction.comments)
-        this.router.navigate(['/transaction-list']);
-      }
+    // if (this.transactionForm?.valid) {
+    //   if (this.transaction != null){
+    //     this.transaction.comments = this.transactionForm.get('comments')?.value;
+    //     console.log(this.transaction.comments)
+    //     this.router.navigate(['/transaction-list']);
+    //   }
+    // }
+
+    if (this.transactionForm?.valid && this.transaction) {
+      const updatedTransaction: Transaction = {
+        ...this.transaction,
+        Comments: this.transactionForm.get('comments')?.value
+      };
+      this.transactionService.updateTransaction(updatedTransaction);
+      this.router.navigate(['/transaction-list']);
     }
   }
 }
